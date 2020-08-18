@@ -30,6 +30,7 @@ class DatePicker {
     locale: LocaleType.en,
     DateTime currentTime,
     DatePickerTheme theme,
+    bool hasDay
   }) async {
     return await Navigator.push(
         context,
@@ -42,7 +43,9 @@ class DatePicker {
             theme: theme,
             barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
             pickerModel: DatePickerModel(
-                currentTime: currentTime, maxTime: maxTime, minTime: minTime, locale: locale)));
+                currentTime: currentTime, maxTime: maxTime, minTime: minTime, locale: locale),
+            hasDay: hasDay    
+                ));
   }
 
   ///
@@ -166,6 +169,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
     this.locale,
     RouteSettings settings,
     pickerModel,
+    this.hasDay
   })  : this.pickerModel = pickerModel ?? DatePickerModel(),
         this.theme = theme ?? DatePickerTheme(),
         super(settings: settings);
@@ -177,6 +181,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
   final DatePickerTheme theme;
   final LocaleType locale;
   final BasePickerModel pickerModel;
+  final bool hasDay;
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 200);
@@ -210,6 +215,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
         locale: this.locale,
         route: this,
         pickerModel: pickerModel,
+        hasDay: hasDay
       ),
     );
     ThemeData inheritTheme = Theme.of(context, shadowThemeOnly: true);
@@ -222,7 +228,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
 
 class _DatePickerComponent extends StatefulWidget {
   _DatePickerComponent(
-      {Key key, @required this.route, this.onChanged, this.locale, this.pickerModel});
+      {Key key, @required this.route, this.onChanged, this.locale, this.pickerModel, this.hasDay});
 
   final DateChangedCallback onChanged;
 
@@ -231,6 +237,8 @@ class _DatePickerComponent extends StatefulWidget {
   final LocaleType locale;
 
   final BasePickerModel pickerModel;
+
+  final bool hasDay;
 
   @override
   State<StatefulWidget> createState() {
@@ -398,24 +406,26 @@ class _DatePickerState extends State<_DatePickerComponent> {
                   })
                 : null,
           ),
-          // Text(
-          //   widget.pickerModel.rightDivider(),
-          //   style: theme.itemStyle,
-          // ),
-          // Container(
-          //   child: widget.pickerModel.layoutProportions()[2] > 0
-          //       ? _renderColumnView(
-          //           ValueKey(widget.pickerModel.currentMiddleIndex() * 100 +
-          //               widget.pickerModel.currentLeftIndex()),
-          //           theme,
-          //           widget.pickerModel.rightStringAtIndex,
-          //           rightScrollCtrl,
-          //           widget.pickerModel.layoutProportions()[2], (index) {
-          //           widget.pickerModel.setRightIndex(index);
-          //           _notifyDateChanged();
-          //         }, null)
-          //       : null,
-          // ),
+          if(widget.hasDay)
+          Text(
+            widget.pickerModel.rightDivider(),
+            style: theme.itemStyle,
+          ),
+          if(widget.hasDay)
+          Container(
+            child: widget.pickerModel.layoutProportions()[2] > 0
+                ? _renderColumnView(
+                    ValueKey(widget.pickerModel.currentMiddleIndex() * 100 +
+                        widget.pickerModel.currentLeftIndex()),
+                    theme,
+                    widget.pickerModel.rightStringAtIndex,
+                    rightScrollCtrl,
+                    widget.pickerModel.layoutProportions()[2], (index) {
+                    widget.pickerModel.setRightIndex(index);
+                    _notifyDateChanged();
+                  }, null)
+                : null,
+          ),
         ],
       ),
     );
